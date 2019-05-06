@@ -36,6 +36,34 @@ def search(isamAppliance, realm, propname, subsection=None, check_mode=False, fo
 
     return return_obj
 
+def search_all(isamAppliance, realm, propname, subsection=None, check_mode=False, force=False):
+    """
+    Search kerberos realm property by name; based on the get_all function
+    """
+    if subsection is None:
+        uriprop = "{0}".format(realm)
+        subsection = "NA"
+    else:
+        uriprop = "{0}/{1}".format(realm, subsection)
+
+    logger.info("property to search under: {0} where property is: {1}".format(uriprop, propname))
+
+    ret_obj = realms.get_all(isamAppliance, 'yes', 'no', 'no')
+
+    return_obj = isamAppliance.create_return_object()
+    return_obj["warnings"] = ret_obj["warnings"]
+
+    for obj in ret_obj['data']:
+        if obj['name'] == realm:
+            for items in obj['children']:
+                if propname == items['name']:
+                    logger.info("Found Kerberos realm property {0} id: {1}".format(propname, items['id']))
+                    return_obj['data'] = items['name']
+                    return_obj['rc'] = 0
+                    break
+
+    return return_obj
+
 
 def _check(isamAppliance, realm, propname, propvalue, subsection=None):
     """
@@ -47,7 +75,7 @@ def _check(isamAppliance, realm, propname, propvalue, subsection=None):
 
     propstring = "{0} = {1}".format(propname, propvalue)
 
-    ret_obj = search(isamAppliance, realm, propname, subsection)
+    ret_obj = search_all(isamAppliance, realm, propname, subsection)
     logger.debug("Looking for existing kerberos property {0} in {1}".format(propname, ret_obj['data']))
     if ret_obj['data'] != {}:
         if ret_obj['data'] == propstring:
@@ -76,9 +104,8 @@ def add(isamAppliance, realm, propname, propvalue, subsection=None, check_mode=F
             warnings=["Subsection: {0}/{1} does not exists.".format(realm, subsection)])
 
     if _check(isamAppliance, realm, propname, propvalue, subsection) is True and force is False:
-        return isamAppliance.create_return_object(
+          return isamAppliance.create_return_object(
             warnings=["Property: {0} with value: {1} already exists: ".format(uriprop, propvalue)])
-
     if force is True or _check(isamAppliance, realm, propname, propvalue, subsection) is False:
         if check_mode is True:
             return isamAppliance.create_return_object(changed=True)
@@ -108,7 +135,7 @@ def delete(isamAppliance, realm, propname, subsection=None, check_mode=False, fo
         uriprop = "{0}/{1}".format(realm, subsection)
 
     logger.debug(" Remove param uri = {0}/{1}/{2}".format(uri, uriprop, propname))
-    ret_obj = _search(isamAppliance, realm, propname, subsection)
+    ret_obj = search(isamAppliance, realm, propname, subsection)
 
     if ret_obj['data'] == {} and force is False:
         return isamAppliance.create_return_object(
@@ -141,10 +168,10 @@ def update(isamAppliance, realm, propname, propvalue, subsection=None, check_mod
         return isamAppliance.create_return_object(
             warnings=["Subsection: {0}/{1} does not exists.".format(realm, subsection)])
 
-    ret_obj = _search(isamAppliance, realm, propname, subsection)
-    warnings = ret_obj["warnings"]
+    ret_obj = search_all(isamAppliance, realm, propname, subsection)
+    warnings = ret_obj['warnings']
 
-    if ret_obj["data"] == {}:
+    if ret_obj['data'] == {}:
         warnings.append("Property {0} not found, skipping update.".format(propname))
         return isamAppliance.create_return_object(warnings=warnings)
 

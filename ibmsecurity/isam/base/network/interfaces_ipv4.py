@@ -119,9 +119,7 @@ def set_dhcp(isamAppliance, label, vlanId=None, enabled=False, allowManagement=F
                 'providesDefaultRoute': providesDefaultRoute,
                 'routeMetric': routeMetric
             }
-            update_needed = not (
-                ibmsecurity.utilities.tools.json_sort(ret_obj['ipv4']['dhcp']) == ibmsecurity.utilities.tools.json_sort(
-                    upd_dhcp))
+            update_needed = not (ibmsecurity.utilities.tools.json_sort(ret_obj['ipv4']['dhcp']) == ibmsecurity.utilities.tools.json_sort(upd_dhcp))
             if (update_needed is True):
                 ret_obj['ipv4']['dhcp'] = upd_dhcp
 
