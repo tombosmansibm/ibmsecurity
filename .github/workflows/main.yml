@@ -1,3 +1,4 @@
+---
 - name: Perform integration testing with ansible-test
   uses: ansible-community/ansible-test-gh-action@release/v1
   with:
