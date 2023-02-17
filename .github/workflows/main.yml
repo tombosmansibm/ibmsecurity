@@ -1,5 +1,4 @@
----
-- name: Perform integration testing with ansible-test
+name: Perform integration testing with ansible-test
   uses: ansible-community/ansible-test-gh-action@release/v1
   with:
     ansible-core-version: stable-2.14
@@ -8,12 +7,12 @@
     controller-python-version: auto
     testing-type: integration
     test-deps: ansible.netcommon
-- name: Perform sanity testing with ansible-test
+name: Perform sanity testing with ansible-test
   uses: ansible-community/ansible-test-gh-action@release/v1
   with:
     ansible-core-version: stable-2.14
     testing-type: sanity
-- name: Perform unit testing with ansible-test
+name: Perform unit testing with ansible-test
   uses: ansible-community/ansible-test-gh-action@release/v1
   with:
     ansible-core-version: stable-2.14
